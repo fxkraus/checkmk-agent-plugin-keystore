@@ -1,5 +1,6 @@
-# Literal tag (no ARG) so Dependabot can detect and bump it
-FROM docker.io/checkmk/check-mk-cloud:2.4.0p37
+# Latest Checkmk 2.5 patch release. The tag floats on purpose; CI pulls it on
+# every build, so it is not managed by Dependabot.
+FROM docker.io/checkmk/check-mk-ultimatemt:2.5.0-latest
 
 # Initialize the CheckMK site at build time so it is cached in the image layer.
 # This avoids the ~25 s penalty of running /docker-entrypoint.sh on every container start.

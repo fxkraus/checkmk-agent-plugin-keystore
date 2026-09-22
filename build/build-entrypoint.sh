@@ -22,8 +22,10 @@ cd share/check_mk
 # Copy agent plugin
 cp -R "$SOURCE/agents" .
 
-# Create the MKP manifest template (must be run as site user)
-su - cmk -c "/omd/sites/cmk/bin/mkp template keystore"
+# Create the MKP manifest template (must be run as site user).
+# Since Checkmk 2.5 the template is printed to stdout instead of written to a file.
+MANIFEST="$CMK/tmp/keystore.manifest"
+su - cmk -c "/omd/sites/cmk/bin/mkp template keystore" > "$MANIFEST"
 
 # Allow git operations on the mounted source directory
 git config --global --add safe.directory "$SOURCE"
@@ -45,7 +47,7 @@ if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+([ipb][0-9]+)?$ ]]; then
 fi
 
 # Inject version number and metadata into the manifest
-/build-modify-extension.py "$VERSION" "$CMK/tmp/check_mk/keystore.manifest.temp"
+/build-modify-extension.py "$VERSION" "$MANIFEST"
 
 # Ensure the site user can write to plugin directories during packaging
 chmod go+rw "$CMK/local/lib/check_mk/base/cee/plugins/bakery"
@@ -55,7 +57,7 @@ chmod go+rw "$CMK/local/lib/python3/cmk_addons/plugins/keystore/graphing"
 chmod go+rw "$CMK/local/lib/python3/cmk_addons/plugins/keystore/rulesets"
 
 # Package the MKP (must be run as site user)
-su - cmk -c "/omd/sites/cmk/bin/mkp package $CMK/tmp/check_mk/keystore.manifest.temp"
+su - cmk -c "/omd/sites/cmk/bin/mkp package $MANIFEST"
 
 # Copy the built MKP back to the mounted source volume
 cp "$CMK/var/check_mk/packages_local/"*.mkp "$SOURCE"
