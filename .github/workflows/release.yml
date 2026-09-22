@@ -36,6 +36,7 @@ jobs:
           file: build/Dockerfile
           tags: checkmk-keystore-build:latest
           load: true
+          pull: true
           cache-from: type=gha
           cache-to: type=gha,mode=max
 

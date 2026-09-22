@@ -293,8 +293,9 @@ shared Docker network:
 Inside the devcontainer, use `make deploy-plugin`, `make discover`, or
 `make redeploy` to push server-side changes and rediscover services.
 
-> **Note:** The devcontainer and build image use the
-> `checkmk/check-mk-cloud` Docker image, a commercial Checkmk edition.
+> **Note:** The devcontainer uses the `checkmk/check-mk-cloud` (2.4) and the
+> build image the `checkmk/check-mk-ultimatemt` (2.5) Docker image, both
+> commercial Checkmk editions.
 > Review the [Checkmk licensing terms](https://checkmk.com/pricing) before use.
 
 ### Prerequisites (local development without devcontainer)
@@ -401,19 +402,21 @@ derived from the commit hash). Tagged releases get a proper version.
 
 Dependabot minor and patch updates of the uv and pre-commit ecosystems are
 merged automatically once all required checks pass. Docker image and GitHub
-Actions updates, and all major updates, always need a manual review. Checkmk
-images are limited to `2.4.0pNN` patch releases (see the note in
-`.github/dependabot.yml`). Auto-merge needs two repository settings; without
+Actions updates, and all major updates, always need a manual review. The
+devcontainer's Checkmk image is limited to `2.4.0pNN` patch releases (see the
+note in `.github/dependabot.yml`). Auto-merge needs two repository settings; without
 them, the workflow would merge immediately, before CI has finished:
 
 1. **Settings → General → Allow auto-merge** enabled.
 2. A branch ruleset on `main` requiring the status checks `lint`, `secrets`,
    `bats`, `pytest (Checkmk 2.4)`, `pytest (Checkmk 2.5)` and `mkp`.
 
-The pytest jobs use the `2.4.0-latest` / `2.5.0-latest` images, so the
-matrix needs no version maintenance. The MKP itself is built once with the
-pinned image in `build/Dockerfile` (an MKP only bundles the plugin files and
-is not version-specific).
+The pytest jobs use the `2.4.0-latest` (Cloud) and `2.5.0-latest`
+(Ultimate MT) images, so the matrix needs no version maintenance. The MKP is
+built with the latest stable Checkmk 2.5 patch release
+(`checkmk/check-mk-ultimatemt:2.5.0-latest` in `build/Dockerfile`, pulled
+fresh on every CI build). The package still declares Checkmk 2.4.0 as its
+minimum version and installs on both 2.4 and 2.5.
 
 ---
 

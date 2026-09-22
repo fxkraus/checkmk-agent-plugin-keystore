@@ -69,8 +69,8 @@ jobs:
           - checkmk: "2.4"
             image: docker.io/checkmk/check-mk-cloud:2.4.0-latest
           - checkmk: "2.5"
-            # Cloud edition was renamed to Ultimate in 2.5
-            image: docker.io/checkmk/check-mk-ultimate:2.5.0-latest
+            # Same edition as the MKP build image (build/Dockerfile)
+            image: docker.io/checkmk/check-mk-ultimatemt:2.5.0-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
       - name: Run pytest
@@ -78,7 +78,7 @@ jobs:
         env:
           IMAGE: ${{ matrix.image }}
 
-  # Packages the MKP with the pinned build image (kept current by Dependabot).
+  # Packages the MKP with the latest Checkmk 2.5 patch release (build/Dockerfile).
   # On main, the MKP is kept as a workflow artifact for each commit.
   mkp:
     runs-on: ubuntu-latest
@@ -95,6 +95,7 @@ jobs:
           file: build/Dockerfile
           tags: checkmk-keystore-build:ci
           load: true
+          pull: true
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
