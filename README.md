@@ -179,7 +179,7 @@ lib/python3/
 .github/workflows/
   ci.yml                         # Lint, secret scan, tests and MKP build
   release.yml                    # Build and publish the MKP on version tags
-  dependabot-auto-merge.yml      # Auto-merge minor/patch Dependabot PRs
+  dependabot-auto-merge.yml      # Auto-merge minor/patch pip + pre-commit Dependabot PRs
 build/
   build-entrypoint.sh            # Packages the MKP inside the container
   build-modify-extension.py      # Injects git version into the manifest
@@ -384,14 +384,18 @@ Inside the devcontainer or a Checkmk site, `pytest tests/` works directly.
 |---|---|---|
 | `ci.yml` | push to `main`, pull requests | pre-commit lint, gitleaks secret scan, BATS, pytest against Checkmk 2.4 and 2.5, MKP build |
 | `release.yml` | tag `vX.Y.Z` (optionally `pN`, `iN`, `bN` suffix) | builds the MKP and publishes a GitHub release (`iN`/`bN` as pre-release) |
-| `dependabot-auto-merge.yml` | Dependabot pull requests | enables auto-merge for minor/patch updates |
+| `dependabot-auto-merge.yml` | Dependabot pull requests | enables auto-merge for minor/patch pip and pre-commit updates |
 
 Every commit on `main` produces an MKP, attached to the CI run as the
 artifact `keystore-mkp-<commit-sha>` (kept 90 days, version `0.0.<n>`
 derived from the commit hash). Tagged releases get a proper version.
 
-Dependabot minor and patch updates are merged automatically once all
-required checks pass. This needs two repository settings:
+Dependabot minor and patch updates of the pip and pre-commit ecosystems are
+merged automatically once all required checks pass. Docker image and GitHub
+Actions updates, and all major updates, always need a manual review. Checkmk
+images are limited to `2.4.0pNN` patch releases (see the note in
+`.github/dependabot.yml`). Auto-merge needs two repository settings; without
+them, the workflow would merge immediately, before CI has finished:
 
 1. **Settings → General → Allow auto-merge** enabled.
 2. A branch ruleset on `main` requiring the status checks `lint`, `secrets`,

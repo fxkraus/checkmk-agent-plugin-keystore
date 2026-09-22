@@ -1,8 +1,10 @@
-# Enable auto-merge for Dependabot minor and patch updates.
-# GitHub merges the PR only after all required status checks (CI workflow)
-# have passed. Major updates are left open for manual review.
+# Enable auto-merge for Dependabot minor and patch updates of the pip and
+# pre-commit ecosystems. GitHub merges the PR only after all required status
+# checks (CI workflow) have passed. Docker and GitHub Actions updates and all
+# major updates are left open for manual review.
 #
-# Repository prerequisites:
+# Repository prerequisites (without them `gh pr merge --auto` merges at once,
+# before CI has finished):
 #   - Settings → General → "Allow auto-merge" enabled
 #   - A branch ruleset on main requiring the CI checks (lint, secrets, bats,
 #     pytest (Checkmk 2.4), pytest (Checkmk 2.5), mkp) to pass before merging
@@ -10,14 +12,15 @@ name: Dependabot Auto-Merge
 
 on: pull_request
 
-permissions:
-  contents: write
-  pull-requests: write
+permissions: {}
 
 jobs:
   auto-merge:
     runs-on: ubuntu-latest
     if: github.event.pull_request.user.login == 'dependabot[bot]'
+    permissions:
+      contents: write
+      pull-requests: write
     steps:
       - name: Fetch Dependabot metadata
         id: metadata
@@ -27,8 +30,9 @@ jobs:
 
       - name: Enable auto-merge for minor and patch updates
         if: >-
-          steps.metadata.outputs.update-type == 'version-update:semver-minor' ||
-          steps.metadata.outputs.update-type == 'version-update:semver-patch'
+          contains(fromJSON('["pip", "pre_commit"]'), steps.metadata.outputs.package-ecosystem) &&
+          (steps.metadata.outputs.update-type == 'version-update:semver-minor' ||
+           steps.metadata.outputs.update-type == 'version-update:semver-patch')
         run: gh pr merge --auto --squash "$PR_URL"
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
