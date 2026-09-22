@@ -1,5 +1,5 @@
 # Literal tag (no ARG) so Dependabot can detect and bump it
-FROM docker.io/checkmk/check-mk-cloud:2.4.0p21
+FROM docker.io/checkmk/check-mk-cloud:2.5.0-2025.11.04
 
 # Initialize the CheckMK site at build time so it is cached in the image layer.
 # This avoids the ~25 s penalty of running /docker-entrypoint.sh on every container start.
