@@ -1,5 +1,5 @@
 # Literal tag (no ARG) so Dependabot can detect and bump it
-FROM docker.io/checkmk/check-mk-cloud:2.4.0p21
+FROM docker.io/checkmk/check-mk-cloud:2.4.0p37
 
 RUN /docker-entrypoint.sh /bin/true
 
