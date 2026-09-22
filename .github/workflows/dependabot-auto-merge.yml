@@ -1,4 +1,4 @@
-# Enable auto-merge for Dependabot minor and patch updates of the pip and
+# Enable auto-merge for Dependabot minor and patch updates of the uv and
 # pre-commit ecosystems. GitHub merges the PR only after all required status
 # checks (CI workflow) have passed. Docker and GitHub Actions updates and all
 # major updates are left open for manual review.
@@ -30,7 +30,7 @@ jobs:
 
       - name: Enable auto-merge for minor and patch updates
         if: >-
-          contains(fromJSON('["pip", "pre_commit"]'), steps.metadata.outputs.package-ecosystem) &&
+          contains(fromJSON('["uv", "pre_commit"]'), steps.metadata.outputs.package-ecosystem) &&
           (steps.metadata.outputs.update-type == 'version-update:semver-minor' ||
            steps.metadata.outputs.update-type == 'version-update:semver-patch')
         run: gh pr merge --auto --squash "$PR_URL"

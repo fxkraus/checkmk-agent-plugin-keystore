@@ -1,3 +1,33 @@
+# Development dependencies, managed with uv (https://docs.astral.sh/uv/).
+# This is not an installable package: the plugin ships as an MKP.
+# Pins are exact so Dependabot bumps them; uv.lock pins the full dependency tree.
+
+[project]
+name = "checkmk-agent-plugin-keystore"
+version = "0.0.0"  # unused; releases are versioned by git tags
+requires-python = ">=3.12"
+
+[dependency-groups]
+# Installed into the Checkmk interpreter by tests/run-pytest.sh
+test = ["pytest==9.1.1"]
+# Used by the CI lint job
+lint = ["pre-commit==4.6.2"]
+dev = [
+    { include-group = "test" },
+    { include-group = "lint" },
+    "pytest-cov==7.1.0",
+    "pytest-md==0.2.0",
+    "pytest-emoji==0.2.0",
+    "requests-mock==1.12.1",
+    "ruff==0.16.8",
+    "mypy==1.19.1",
+    "gitpython==3.1.62",
+]
+
+[tool.uv]
+package = false
+default-groups = ["dev"]
+
 # Ruff configuration — fast Python linter and formatter.
 # Replaces flake8, pylint, isort, black, and more.
 # See https://docs.astral.sh/ruff/

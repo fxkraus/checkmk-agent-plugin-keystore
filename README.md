@@ -174,12 +174,14 @@ lib/python3/
     rulesets/
       ruleset_keystore_bakery.py           # WATO ruleset: bakery configuration
       ruleset_keystore_check_parameters.py # WATO ruleset: check thresholds
+pyproject.toml                   # Dev dependencies (uv) + ruff/mypy/pytest config
+uv.lock                          # Locked dev dependency versions
 .pre-commit-config.yaml          # Linters + secret scan (local and CI)
 .hadolint.yaml                   # Dockerfile lint configuration
 .github/workflows/
   ci.yml                         # Lint, secret scan, tests and MKP build
   release.yml                    # Build and publish the MKP on version tags
-  dependabot-auto-merge.yml      # Auto-merge minor/patch pip + pre-commit Dependabot PRs
+  dependabot-auto-merge.yml      # Auto-merge minor/patch uv + pre-commit Dependabot PRs
 build/
   build-entrypoint.sh            # Packages the MKP inside the container
   build-modify-extension.py      # Injects git version into the manifest
@@ -265,7 +267,7 @@ shared Docker network:
    registers itself with the CheckMK server, installs the agent,
    creates test keystores, and deploys the keystore plugin.
 4. Enable the [pre-commit hooks](#pre-commit-hooks) once per clone
-   (`pre-commit` is preinstalled in the devcontainer):
+   (`pre-commit` is preinstalled in the devcontainer, from `uv.lock`):
 
    ```bash
    pre-commit install
@@ -306,15 +308,22 @@ dnf install bats java-17-openjdk-headless
 # Debian/Ubuntu
 apt install bats default-jdk-headless
 
-# Linters and secret scanning are managed by pre-commit (see below)
-uv tool install pre-commit   # or: pipx install pre-commit
+# uv: https://docs.astral.sh/uv/getting-started/installation/
 ```
 
-Then enable the hooks in your clone before the first commit:
+Python dev dependencies (pytest, ruff, mypy, pre-commit, …) are declared in
+`pyproject.toml` and pinned in `uv.lock`. Create the local `.venv` and enable
+the hooks in your clone before the first commit:
 
 ```bash
-pre-commit install
+uv sync                      # installs the locked dev dependencies into .venv
+uv run pre-commit install
 ```
+
+Run tools through `uv run` (e.g. `uv run make lint`) or activate the
+environment with `source .venv/bin/activate`. After changing dependencies in
+`pyproject.toml`, run `uv lock` and commit `uv.lock`; CI fails if it is out
+of date.
 
 ### Pre-commit Hooks
 
@@ -384,13 +393,13 @@ Inside the devcontainer or a Checkmk site, `pytest tests/` works directly.
 |---|---|---|
 | `ci.yml` | push to `main`, pull requests | pre-commit lint, gitleaks secret scan, BATS, pytest against Checkmk 2.4 and 2.5, MKP build |
 | `release.yml` | tag `vX.Y.Z` (optionally `pN`, `iN`, `bN` suffix) | builds the MKP and publishes a GitHub release (`iN`/`bN` as pre-release) |
-| `dependabot-auto-merge.yml` | Dependabot pull requests | enables auto-merge for minor/patch pip and pre-commit updates |
+| `dependabot-auto-merge.yml` | Dependabot pull requests | enables auto-merge for minor/patch uv and pre-commit updates |
 
 Every commit on `main` produces an MKP, attached to the CI run as the
 artifact `keystore-mkp-<commit-sha>` (kept 90 days, version `0.0.<n>`
 derived from the commit hash). Tagged releases get a proper version.
 
-Dependabot minor and patch updates of the pip and pre-commit ecosystems are
+Dependabot minor and patch updates of the uv and pre-commit ecosystems are
 merged automatically once all required checks pass. Docker image and GitHub
 Actions updates, and all major updates, always need a manual review. Checkmk
 images are limited to `2.4.0pNN` patch releases (see the note in
