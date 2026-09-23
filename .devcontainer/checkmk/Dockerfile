@@ -1,7 +1,9 @@
-# Literal tags (no ARG) so Dependabot can detect and bump them
+# Literal tag (no ARG) so Dependabot can detect and bump it
 FROM ghcr.io/astral-sh/uv:0.12.17 AS uv
 
-FROM docker.io/checkmk/check-mk-cloud:2.4.0p37
+# Latest Checkmk 2.5 patch release, same as build/Dockerfile. The tag floats on
+# purpose; rebuild the devcontainer to pick up a new patch release.
+FROM docker.io/checkmk/check-mk-ultimatemt:2.5.0-latest
 
 RUN /docker-entrypoint.sh /bin/true
 

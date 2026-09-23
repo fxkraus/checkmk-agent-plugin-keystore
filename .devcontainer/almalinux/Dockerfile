@@ -17,6 +17,7 @@ RUN dnf -y --allowerasing install \
       openssl \
       which \
       findutils \
+      socat \
       java-17-openjdk-headless \
     && dnf clean all
 

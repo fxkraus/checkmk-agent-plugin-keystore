@@ -37,9 +37,10 @@ ln -sf "${WORKSPACE}/lib/python3/cmk_addons/plugins/keystore/rulesets/ruleset_ke
        "${CMK_LOCAL}/lib/python3/cmk_addons/plugins/keystore/rulesets/ruleset_keystore_check_parameters.py"
 
 # --- Bakery plugin (Bakery API v1 — separate from cmk_addons hierarchy) ---
-mkdir -p "${CMK_LOCAL}/lib/check_mk/base/cee/plugins/bakery"
+# Same target as an installed MKP: Checkmk 2.5 sites have no local/lib/check_mk
+mkdir -p "${CMK_LOCAL}/lib/python3/cmk/base/cee/plugins/bakery"
 ln -sf "${WORKSPACE}/lib/check_mk/base/cee/plugins/bakery/keystore.py" \
-       "${CMK_LOCAL}/lib/check_mk/base/cee/plugins/bakery/keystore.py"
+       "${CMK_LOCAL}/lib/python3/cmk/base/cee/plugins/bakery/keystore.py"
 
 # --- Agent plugin ---
 mkdir -p "${CMK_LOCAL}/share/check_mk/agents/plugins"
@@ -48,21 +49,26 @@ ln -sf "${WORKSPACE}/agents/plugins/keystore" \
 
 echo "Plugin files symlinked into CheckMK site."
 
+# --- Restart OMD site so all services load the plugin files ---
+# Since Checkmk 2.5 the automation-helper keeps the plugins loaded from its
+# start; without a restart, discovery via GUI/REST API misses the new plugin.
+# Restart before setting the password: the AlmaLinux container starts its
+# setup as soon as the API accepts the password.
+echo "Restarting OMD site 'cmk'..."
+sudo omd restart cmk
+
 # --- Set admin password and ensure account is unlocked ---
 CMK_PASSWORD="${CMK_PASSWORD:-cmk}"
 echo "Setting cmkadmin password and unlocking account..."
-sudo htpasswd -b /omd/sites/cmk/etc/htpasswd cmkadmin "${CMK_PASSWORD}"
+# cmk-passwd writes a bcrypt hash; Checkmk 2.5 rejects htpasswd's default MD5 hashes
+printf '%s\n' "${CMK_PASSWORD}" | /omd/sites/cmk/bin/cmk-passwd --stdin cmkadmin
 sudo sed -i "s/'locked': True/'locked': False/g" \
     /omd/sites/cmk/etc/check_mk/multisite.d/wato/users.mk
 echo "0" | sudo tee /omd/sites/cmk/var/check_mk/web/cmkadmin/num_failed_logins.mk > /dev/null
 
-# --- Start OMD site (ensures services are running after container creation) ---
-echo "Starting OMD site 'cmk'..."
-sudo omd start cmk || sudo omd restart cmk
-
 echo "============================================================================"
 echo "Setup complete!"
-echo "  CheckMK Web UI: http://localhost:5000/cmk/"
+echo "  CheckMK Web UI: http://localhost:5050/cmk/ (from the host)"
 echo "  Login: cmkadmin / ${CMK_PASSWORD}"
 echo "  AlmaLinux host: almalinux-host (auto-registered)"
 echo "============================================================================"

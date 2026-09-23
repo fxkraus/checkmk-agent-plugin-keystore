@@ -5,8 +5,11 @@ services:
       dockerfile: .devcontainer/checkmk/Dockerfile
     hostname: checkmk-server
     container_name: checkmk-keystore-checkmk
+    # PID 1 must reap exited daemons, otherwise `omd` sees zombies as running
+    init: true
     ports:
-      - "127.0.0.1:5000:5000"
+      # Host port 5050: macOS AirPlay Receiver occupies port 5000
+      - "127.0.0.1:5050:5000"
       - "127.0.0.1:8000:8000"
     volumes:
       - ..:/workspace:cached
@@ -19,7 +22,8 @@ services:
       resources:
         limits:
           cpus: "2.0"
-          memory: 2G
+          # Checkmk 2.5 gets OOM-killed (ui-job-scheduler first) at 2G
+          memory: 4G
     # Uncomment for Podman with rootless user namespace mapping:
     # userns_mode: keep-id
 
@@ -29,6 +33,7 @@ services:
       dockerfile: .devcontainer/almalinux/Dockerfile
     hostname: almalinux-host
     container_name: checkmk-keystore-almalinux
+    init: true
     volumes:
       - ..:/workspace:ro
     networks:

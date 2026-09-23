@@ -188,12 +188,12 @@ build/
   Dockerfile                     # Build container definition
 .devcontainer/
   docker-compose.yml             # Multi-container dev environment
-  checkmk/Dockerfile             # CheckMK 2.4 Cloud dev container
+  checkmk/Dockerfile             # Checkmk 2.5 Ultimate MT dev container
   almalinux/Dockerfile           # AlmaLinux 9 monitored test host (with Java)
   almalinux/entrypoint.sh        # Agent install + keystore setup automation
   scripts/post-create.sh         # Symlinks plugin into CMK site
   scripts/deploy-plugin.sh       # Redeploy plugin + reload CMK
-  scripts/discover-services.sh   # Trigger service discovery via REST API
+  scripts/discover-services.sh   # Trigger service discovery (cmk CLI)
 tests/
   test_check_keystore.py         # Check plugin tests (pytest)
   test_bakery_keystore.py        # Bakery plugin tests (pytest)
@@ -255,8 +255,13 @@ shared Docker network:
 
 | Container | Image | Purpose |
 |---|---|---|
-| `checkmk-keystore-checkmk` | CheckMK 2.4 Cloud | CheckMK server + dev environment |
+| `checkmk-keystore-checkmk` | Checkmk 2.5 Ultimate MT (`2.5.0-latest`) | Checkmk server + dev environment |
 | `checkmk-keystore-almalinux` | AlmaLinux 9 + Java 17 | Monitored test host with test keystores |
+
+> **Apple Silicon:** the Checkmk images are amd64 only. In Docker Desktop,
+> enable **Settings → General → Use Rosetta for x86_64/amd64 emulation on
+> Apple Silicon**. Under the default QEMU emulation the Checkmk site does not
+> start (Apache fails with `Couldn't create the fcgid-proctbl mutex`).
 
 **Quick start:**
 
@@ -280,7 +285,7 @@ shared Docker network:
 
 **Credentials:**
 
-- **Web UI:** `http://localhost:5000/cmk/`
+- **Web UI:** `http://localhost:5050/cmk/` (host port 5050, since macOS AirPlay Receiver uses 5000)
 - **Login:** `cmkadmin` / `cmk` (local development only; ports are bound to `127.0.0.1`)
 
 **Test keystores created in the AlmaLinux container:**
@@ -293,9 +298,8 @@ shared Docker network:
 Inside the devcontainer, use `make deploy-plugin`, `make discover`, or
 `make redeploy` to push server-side changes and rediscover services.
 
-> **Note:** The devcontainer uses the `checkmk/check-mk-cloud` (2.4) and the
-> build image the `checkmk/check-mk-ultimatemt` (2.5) Docker image, both
-> commercial Checkmk editions.
+> **Note:** The devcontainer and the build image use the
+> `checkmk/check-mk-ultimatemt` Docker image, a commercial Checkmk edition.
 > Review the [Checkmk licensing terms](https://checkmk.com/pricing) before use.
 
 ### Prerequisites (local development without devcontainer)
@@ -403,8 +407,8 @@ derived from the commit hash). Tagged releases get a proper version.
 Dependabot minor and patch updates of the uv and pre-commit ecosystems are
 merged automatically once all required checks pass. Docker image and GitHub
 Actions updates, and all major updates, always need a manual review. The
-devcontainer's Checkmk image is limited to `2.4.0pNN` patch releases (see the
-note in `.github/dependabot.yml`). Auto-merge needs two repository settings; without
+Checkmk images use the floating `2.5.0-latest` tag and are not managed by
+Dependabot (see the note in `.github/dependabot.yml`). Auto-merge needs two repository settings; without
 them, the workflow would merge immediately, before CI has finished:
 
 1. **Settings → General → Allow auto-merge** enabled.
