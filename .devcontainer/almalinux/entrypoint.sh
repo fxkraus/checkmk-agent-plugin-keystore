@@ -41,7 +41,7 @@ echo "CheckMK server is ready."
 if ! rpm -q check-mk-agent >/dev/null 2>&1; then
     echo "Downloading CheckMK agent RPM..."
     AGENTS_PAGE="http://${CMK_SERVER}:5000/${CMK_SITE}/check_mk/agents/"
-    RPM_NAME=$(curl -sf "${AGENTS_PAGE}" \
+    RPM_NAME=$(curl -sf --max-time 60 "${AGENTS_PAGE}" \
         | grep -oP 'check-mk-agent-[0-9][^"]*\.noarch\.rpm' \
         | head -n1) || true
 
@@ -50,7 +50,7 @@ if ! rpm -q check-mk-agent >/dev/null 2>&1; then
         exec tail -f /dev/null
     fi
 
-    curl -sf -o /tmp/check-mk-agent.rpm "${AGENTS_PAGE}${RPM_NAME}"
+    curl -sf --max-time 300 -o /tmp/check-mk-agent.rpm "${AGENTS_PAGE}${RPM_NAME}"
     echo "Installing CheckMK agent (${RPM_NAME})..."
     rpm -ivh --nodeps /tmp/check-mk-agent.rpm || true
     rm -f /tmp/check-mk-agent.rpm
@@ -163,6 +163,12 @@ sleep 5
 # --- Register the agent controller with the CheckMK server ---
 echo "Registering agent controller with CheckMK server..."
 if command -v cmk-agent-ctl >/dev/null 2>&1; then
+    # No systemd in the container: serve the agent socket that the
+    # check-mk-agent.socket unit would provide (one agent run per connection)
+    socat UNIX-LISTEN:/run/check-mk-agent.socket,fork,unlink-early,user=cmk-agent,mode=0240 \
+        EXEC:/usr/bin/check_mk_agent &
+    sleep 1
+
     cmk-agent-ctl register \
         --hostname "${AGENT_HOSTNAME}" \
         --server "${CMK_SERVER}:8000" \

@@ -4,18 +4,6 @@
 	"service": "checkmk",
 	"workspaceFolder": "/workspace",
 
-	"forwardPorts": [5000, 8000],
-	"portsAttributes": {
-		"5000": {
-			"label": "CheckMK Web UI",
-			"onAutoForward": "notify"
-		},
-		"8000": {
-			"label": "CheckMK Agent Receiver",
-			"onAutoForward": "ignore"
-		}
-	},
-
 	"customizations": {
 		"vscode": {
 			"extensions": [

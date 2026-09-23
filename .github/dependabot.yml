@@ -10,13 +10,11 @@
 # the Dockerfile* / *.Dockerfile naming pattern, and only FROM lines with a
 # literal tag (FROM image:${ARG} is not updated).
 #
-# build/Dockerfile is not listed: it uses the floating checkmk 2.5.0-latest tag
-# on purpose (latest stable patch release, pulled by CI on every build).
-#
-# Checkmk image tags: Dependabot compares 2.4.0pNN as a pre-release of 2.4.0,
-# and the daily builds 2.4.0-YYYY.MM.DD as the release 2.4.0.YYYY.MM.DD, so
-# every daily build outranks every patch release. Ignoring ">= 2.4.0" keeps
-# only the 2.4.0pNN patch releases and also blocks 2.5+.
+# Checkmk images (build/Dockerfile, .devcontainer/checkmk/Dockerfile) use the
+# floating 2.5.0-latest tag on purpose (latest stable patch release) and are
+# ignored here. Do not pin them for Dependabot: it compares 2.5.0pNN as a
+# pre-release of 2.5.0 and the daily builds 2.5.0-YYYY.MM.DD as the release
+# 2.5.0.YYYY.MM.DD, so it would propose daily builds as "patch" updates.
 
 version: 2
 updates:
@@ -46,8 +44,7 @@ updates:
     labels:
       - "dependencies"
     ignore:
-      - dependency-name: "checkmk/check-mk-cloud"
-        versions: [">= 2.4.0"]  # see the Checkmk note at the top
+      - dependency-name: "checkmk/*"  # see the Checkmk note at the top
 
   # ── Docker (devcontainer — AlmaLinux) ────────────────────────────────────
   - package-ecosystem: "docker"
