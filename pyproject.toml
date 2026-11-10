@@ -19,7 +19,7 @@ dev = [
     "pytest-md==0.2.0",
     "pytest-emoji==0.2.0",
     "requests-mock==1.12.1",
-    "ruff==0.17.3",
+    "ruff==0.17.4",
     "mypy==2.4.1",
     "gitpython==3.2.1",
 ]
