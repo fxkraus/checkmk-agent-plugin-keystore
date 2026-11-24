@@ -2,7 +2,7 @@
 # Serves as a CheckMK agent target for testing the Java Keystore certificate plugin.
 # On startup, the entrypoint downloads the agent from the CheckMK server,
 # registers with the site, and starts the agent controller daemon.
-FROM docker.io/almalinux:9.8
+FROM docker.io/almalinux:9.9
 
 # Install packages needed by the CheckMK agent and the keystore plugin
 # --allowerasing: AlmaLinux 9 ships curl-minimal which conflicts with curl
